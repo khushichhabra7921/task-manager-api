@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from database import get_db
 from auth import get_current_user
 import models, schemas
@@ -21,15 +21,19 @@ def get_tasks(db: Session = Depends(get_db),
               current_user: models.User = Depends(get_current_user)):
     return db.query(models.Task).filter(models.Task.owner_id == current_user.id).all()
 
-@router.get("/{task_id}", response_model=schemas.TaskResponse)
-def get_task(task_id: int, db: Session = Depends(get_db),
-             current_user: models.User = Depends(get_current_user)):
-    task = db.query(models.Task).filter(
-        models.Task.id == task_id, models.Task.owner_id == current_user.id
-    ).first()
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return task
+@router.get("/", response_model=List[schemas.TaskResponse])
+def get_tasks(
+    page: int = 1,
+    limit: int = 10,
+    status: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    query = db.query(models.Task).filter(models.Task.owner_id == current_user.id)
+    if status:
+        query = query.filter(models.Task.status == status)
+    tasks = query.offset((page - 1) * limit).limit(limit).all()
+    return tasks
 
 @router.put("/{task_id}", response_model=schemas.TaskResponse)
 def update_task(task_id: int, task_update: schemas.TaskUpdate,
