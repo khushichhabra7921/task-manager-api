@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from ai import prioritize_tasks
 from database import get_db
 from auth import get_current_user
 import models, schemas
@@ -61,3 +62,12 @@ def delete_task(task_id: int, db: Session = Depends(get_db),
     db.delete(task)
     db.commit()
     return {"message": "Task deleted successfully"}
+
+@router.get("/ai/prioritize")
+def ai_prioritize(db: Session = Depends(get_db),
+                  current_user: models.User = Depends(get_current_user)):
+    tasks = db.query(models.Task).filter(
+        models.Task.owner_id == current_user.id
+    ).all()
+    result = prioritize_tasks(tasks)
+    return {"prioritization": result}
