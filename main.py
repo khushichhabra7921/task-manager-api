@@ -17,3 +17,5 @@ app.include_router(tasks.router)
 @app.get("/")
 def root():
     return {"message": "Welcome to Task Manager API", "docs": "/docs"}
+
+    # testing AI review
