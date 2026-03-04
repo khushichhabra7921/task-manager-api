@@ -1,6 +1,6 @@
-# Task Manager API
+# AI-Powered Task Manager API
 
-A production-ready REST API for managing tasks with user authentication, built with FastAPI and Python.
+A production-ready REST API for managing tasks with AI-powered prioritization, built with FastAPI and Python.
 
 ## 🚀 Live API
 **Base URL:** https://task-manager-api-taq2.onrender.com  
@@ -9,6 +9,7 @@ A production-ready REST API for managing tasks with user authentication, built w
 ## ✨ Features
 - User registration and login with JWT authentication
 - Full CRUD operations for tasks (Create, Read, Update, Delete)
+- **AI-powered task prioritization** using Groq LLM (Llama 3.3) — analyzes deadlines and status to suggest optimal work order
 - Pagination and filtering (`?page=1&limit=10&status=todo`)
 - SQLite database with SQLAlchemy ORM
 - Input validation with Pydantic
@@ -26,6 +27,7 @@ A production-ready REST API for managing tasks with user authentication, built w
 | SQLite | Database |
 | JWT (python-jose) | Authentication |
 | Pydantic | Data validation |
+| Groq LLM (Llama 3.3) | AI task prioritization |
 | Docker | Containerization |
 | GitHub Actions | CI/CD Pipeline |
 | pytest | Unit testing |
@@ -34,21 +36,22 @@ A production-ready REST API for managing tasks with user authentication, built w
 ## 📁 Project Structure
 ```
 task-manager-api/
-├── main.py              # App entry point
-├── database.py          # Database connection
-├── models.py            # SQLAlchemy models
-├── schemas.py           # Pydantic schemas
-├── auth.py              # JWT authentication
+├── main.py                  # App entry point
+├── database.py              # Database connection
+├── models.py                # SQLAlchemy models
+├── schemas.py               # Pydantic schemas
+├── auth.py                  # JWT authentication
+├── ai.py                    # Groq LLM integration
 ├── routes/
-│   ├── users.py         # User endpoints
-│   └── tasks.py         # Task endpoints
-├── test_api.py          # Unit tests
-├── Dockerfile           # Docker image
-├── docker-compose.yml   # Docker compose
-├── requirements.txt     # Dependencies
+│   ├── users.py             # User endpoints
+│   └── tasks.py             # Task + AI endpoints
+├── test_api.py              # Unit tests
+├── Dockerfile               # Docker image
+├── docker-compose.yml       # Docker compose
+├── requirements.txt         # Dependencies
 └── .github/
     └── workflows/
-        └── ci.yml       # GitHub Actions CI
+        └── ci.yml           # GitHub Actions CI
 ```
 
 ## ⚙️ Local Setup
@@ -69,15 +72,20 @@ task-manager-api/
 3. **Install dependencies**
 ```bash
    pip install -r requirements.txt
-   pip install python-multipart "passlib[bcrypt]==1.7.4" "bcrypt==4.0.1"
 ```
 
-4. **Run the server**
+4. **Set environment variables**
+```bash
+   $env:GROQ_API_KEY="your-groq-api-key"       # Windows
+   export GROQ_API_KEY="your-groq-api-key"      # Mac/Linux
+```
+
+5. **Run the server**
 ```bash
    uvicorn main:app --reload
 ```
 
-5. **Open API docs**
+6. **Open API docs**
 ```
    http://127.0.0.1:8000/docs
 ```
@@ -86,7 +94,7 @@ task-manager-api/
 ```bash
 docker-compose up --build
 ```
-That's it. No Python installation needed.
+No Python installation needed — just Docker.
 
 ## 🧪 Run Tests
 ```bash
@@ -111,6 +119,11 @@ pytest test_api.py -v
 | PUT | `/tasks/{id}` | Update a task | Yes |
 | DELETE | `/tasks/{id}` | Delete a task | Yes |
 
+### AI
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/tasks/ai/prioritize` | AI-powered task prioritization | Yes |
+
 ### Query Parameters for GET /tasks/
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -118,15 +131,27 @@ pytest test_api.py -v
 | limit | int | 10 | Results per page |
 | status | string | None | Filter by status (todo/in-progress/done) |
 
-## 🔐 Authentication Flow
+## 🤖 AI Prioritization
+The `/tasks/ai/prioritize` endpoint uses **Groq LLM (Llama 3.3-70b)** to:
+- Analyze all your tasks
+- Consider deadlines, status and descriptions
+- Return a smart priority order with reasoning
+- Provide an overall productivity summary
 
+Example response:
+```json
+{
+  "prioritization": "PRIORITY ORDER:\n1. ID 2 - Finish ML assignment - Earliest deadline, already in progress\n2. ID 1 - Cisco application - Deadline approaching\n3. ID 3 - Study for exam - Latest deadline\n\nSUMMARY:\nFocus on the ML assignment first..."
+}
+```
+
+## 🔐 Authentication Flow
 1. Register at `POST /users/register`
 2. Login at `POST /users/login` → get JWT token
 3. Click **Authorize** in Swagger UI and paste token
-4. All task endpoints are now accessible
+4. All protected endpoints are now accessible
 
 ## 📊 CI/CD Pipeline
-
 Every push to `main` automatically:
 - Sets up Python environment
 - Installs all dependencies
@@ -136,5 +161,4 @@ Every push to `main` automatically:
 ## 👩‍💻 Author
 **Khushi Chhabra**  
 B.E. Computer Science, Thapar Institute of Engineering and Technology  
-[LinkedIn](https://www.linkedin.com/in/khushichhabra7921)  
-[GitHub](https://github.com/khushichhabra7921)
+[LinkedIn](https://www.linkedin.com/in/khushichhabra7921) | [GitHub](https://github.com/khushichhabra7921)
