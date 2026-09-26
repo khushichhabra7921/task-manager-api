@@ -17,7 +17,7 @@ A REST API for managing tasks with AI-powered prioritization, built with FastAPI
 - Input validation with Pydantic
 - Dockerized for one-command deployment
 - GitHub Actions CI/CD pipeline (auto-runs tests on every push)
-- 8 unit tests with pytest (including mocked-LLM tests)
+- 11 unit tests with pytest (including mocked-LLM tests)
 - Auto-generated interactive API documentation (Swagger UI)
 
 ## 🛠️ Tech Stack
@@ -191,7 +191,7 @@ Example response:
 Every push to `main` automatically:
 - Sets up Python environment
 - Installs all dependencies
-- Runs all 8 pytest unit tests
+- Runs all 11 pytest unit tests
 - Fails the build if any test fails
 
 ## 👩‍💻 Author

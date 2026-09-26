@@ -172,3 +172,38 @@ def test_ai_prioritize_falls_back_to_deadline_order(monkeypatch, create):
     body = response.json()
     assert body["source"] == "fallback"
     assert [t["task_id"] for t in body["priority_order"]] == [sooner, later, no_date]
+
+def test_get_tasks_pagination():
+    headers = auth_headers("dave")
+    ids = [create_task(headers, title=f"Task {i}") for i in range(5)]
+
+    first_page = client.get("/tasks/?page=1&limit=2", headers=headers)
+    last_page = client.get("/tasks/?page=3&limit=2", headers=headers)
+
+    assert [t["id"] for t in first_page.json()] == ids[:2]
+    assert [t["id"] for t in last_page.json()] == ids[4:]
+    assert client.get("/tasks/?page=0", headers=headers).status_code == 422
+    assert client.get("/tasks/?limit=101", headers=headers).status_code == 422
+
+def test_get_tasks_status_filter():
+    headers = auth_headers("erin")
+    create_task(headers, title="Todo 1", status="todo")
+    done_ids = [create_task(headers, title=f"Done {i}", status="done") for i in range(2)]
+    create_task(headers, title="Todo 2", status="todo")
+
+    response = client.get("/tasks/?status=done", headers=headers)
+
+    assert response.status_code == 200
+    assert sorted(t["id"] for t in response.json()) == sorted(done_ids)
+
+def test_get_task_by_id_only_for_owner():
+    owner = auth_headers("frank")
+    other = auth_headers("grace")
+    task_id = create_task(owner, title="Frank's task")
+
+    own = client.get(f"/tasks/{task_id}", headers=owner)
+    someone_elses = client.get(f"/tasks/{task_id}", headers=other)
+
+    assert own.status_code == 200
+    assert own.json()["title"] == "Frank's task"
+    assert someone_elses.status_code == 404
