@@ -1,10 +1,12 @@
 # AI-Powered Task Manager API
 
-A production-ready REST API for managing tasks with AI-powered prioritization, built with FastAPI and Python.
+A REST API for managing tasks with AI-powered prioritization, built with FastAPI and Python.
 
 ## 🚀 Live API
 **Base URL:** https://task-manager-api-taq2.onrender.com  
 **Interactive Docs:** https://task-manager-api-taq2.onrender.com/docs
+
+> ⏳ Hosted on Render's free tier, which sleeps when idle. The first request may take about 50 seconds while the service wakes up; after that it responds normally.
 
 ## ✨ Features
 - User registration and login with JWT authentication
@@ -75,9 +77,24 @@ task-manager-api/
 ```
 
 4. **Set environment variables**
+
+   `SECRET_KEY` is required (the app won't start without it). Generate one with:
 ```bash
-   $env:GROQ_API_KEY="your-groq-api-key"       # Windows
-   export GROQ_API_KEY="your-groq-api-key"      # Mac/Linux
+   python -c "import secrets; print(secrets.token_hex(32))"
+```
+   `GROQ_API_KEY` is optional; without it, AI prioritization falls back to sorting by deadline.
+```bash
+   # Windows (PowerShell)
+   $env:SECRET_KEY="your-generated-secret-key"
+   $env:GROQ_API_KEY="your-groq-api-key"
+
+   # Windows (Command Prompt)
+   set SECRET_KEY=your-generated-secret-key
+   set GROQ_API_KEY=your-groq-api-key
+
+   # Mac/Linux
+   export SECRET_KEY="your-generated-secret-key"
+   export GROQ_API_KEY="your-groq-api-key"
 ```
 
 5. **Run the server**
@@ -91,12 +108,19 @@ task-manager-api/
 ```
 
 ## 🐳 Run with Docker
-```bash
-docker-compose up --build
+Create a `.env` file in the project folder (it's git-ignored):
 ```
-No Python installation needed — just Docker.
+SECRET_KEY=your-generated-secret-key
+GROQ_API_KEY=your-groq-api-key
+```
+Then:
+```bash
+docker compose up --build
+```
+No Python installation needed — just Docker. The SQLite database is stored in `./data/`.
 
 ## 🧪 Run Tests
+Tests need a `SECRET_KEY` set (any dummy value works) but no Groq key — the LLM is mocked.
 ```bash
 pytest test_api.py -v
 ```
@@ -146,7 +170,7 @@ Example response:
     {"task_id": 1, "reason": "Deadline approaching"},
     {"task_id": 3, "reason": "Latest deadline"}
   ],
-  "summary": "Focus on the ML assignment first...",
+  "summary": "Start with the task due soonest, then work through the rest in order.",
   "source": "ai"
 }
 ```
