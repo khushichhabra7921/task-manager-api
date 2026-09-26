@@ -1,7 +1,14 @@
 from groq import Groq
 import os
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+_client = None
+
+def get_client() -> Groq:
+    # Created on first use so the app (and tests) can start without GROQ_API_KEY
+    global _client
+    if _client is None:
+        _client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+    return _client
 
 def prioritize_tasks(tasks: list) -> str:
     if not tasks:
@@ -26,7 +33,7 @@ PRIORITY ORDER:
 SUMMARY:
 [2-3 sentences of overall advice for the user]"""
 
-    response = client.chat.completions.create(
+    response = get_client().chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=500
