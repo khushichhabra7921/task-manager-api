@@ -6,7 +6,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./tasks.db:/app/tasks.db
+      - ./data:/app/data
     environment:
       - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in your shell or a .env file}
+      - DATABASE_URL=sqlite:///./data/tasks.db
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
     restart: unless-stopped
