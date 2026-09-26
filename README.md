@@ -15,7 +15,7 @@ A production-ready REST API for managing tasks with AI-powered prioritization, b
 - Input validation with Pydantic
 - Dockerized for one-command deployment
 - GitHub Actions CI/CD pipeline (auto-runs tests on every push)
-- 5 unit tests with pytest
+- 8 unit tests with pytest (including mocked-LLM tests)
 - Auto-generated interactive API documentation (Swagger UI)
 
 ## 🛠️ Tech Stack
@@ -141,9 +141,21 @@ The `/tasks/ai/prioritize` endpoint uses **Groq LLM (Llama 3.3-70b)** to:
 Example response:
 ```json
 {
-  "prioritization": "PRIORITY ORDER:\n1. ID 2 - Finish ML assignment - Earliest deadline, already in progress\n2. ID 1 - Cisco application - Deadline approaching\n3. ID 3 - Study for exam - Latest deadline\n\nSUMMARY:\nFocus on the ML assignment first..."
+  "priority_order": [
+    {"task_id": 2, "reason": "Earliest deadline and already in progress"},
+    {"task_id": 1, "reason": "Deadline approaching"},
+    {"task_id": 3, "reason": "Latest deadline"}
+  ],
+  "summary": "Focus on the ML assignment first...",
+  "source": "ai"
 }
 ```
+
+### Responsible-AI safeguards
+- **Structured output:** the model must return JSON, which is validated with a Pydantic schema before use.
+- **Prompt-injection guard:** task text is sent as JSON inside `<tasks_data>` delimiters (with `<`/`>` escaped so it can't break out), and the model is told to treat it as data, never instructions.
+- **Ownership check:** any task ID the model returns that doesn't belong to the current user is dropped; tasks it leaves out are appended.
+- **Graceful failure:** the Groq call has a 10s timeout; on any error or invalid output the endpoint returns tasks sorted by deadline with `"source": "fallback"`.
 
 ## 🔐 Authentication Flow
 1. Register at `POST /users/register`
@@ -155,7 +167,7 @@ Example response:
 Every push to `main` automatically:
 - Sets up Python environment
 - Installs all dependencies
-- Runs all 5 pytest unit tests
+- Runs all 8 pytest unit tests
 - Fails the build if any test fails
 
 ## 👩‍💻 Author

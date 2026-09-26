@@ -63,11 +63,10 @@ def delete_task(task_id: int, db: Session = Depends(get_db),
     db.commit()
     return {"message": "Task deleted successfully"}
 
-@router.get("/ai/prioritize")
+@router.get("/ai/prioritize", response_model=schemas.PrioritizationResponse)
 def ai_prioritize(db: Session = Depends(get_db),
                   current_user: models.User = Depends(get_current_user)):
     tasks = db.query(models.Task).filter(
         models.Task.owner_id == current_user.id
     ).all()
-    result = prioritize_tasks(tasks)
-    return {"prioritization": result}
+    return prioritize_tasks(tasks)

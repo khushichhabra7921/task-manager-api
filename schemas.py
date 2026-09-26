@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import List, Literal, Optional
 from datetime import date
 
 # User schemas
@@ -48,3 +48,16 @@ class TaskResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# AI prioritization schemas
+class PrioritizedTask(BaseModel):
+    task_id: int
+    reason: str
+
+class LLMPrioritization(BaseModel):
+    """Shape the LLM must return; anything else is rejected."""
+    priority_order: List[PrioritizedTask]
+    summary: str
+
+class PrioritizationResponse(LLMPrioritization):
+    source: Literal["ai", "fallback"]
