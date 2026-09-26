@@ -8,5 +8,5 @@ services:
     volumes:
       - ./tasks.db:/app/tasks.db
     environment:
-      - SECRET_KEY=your-secret-key-change-in-production
+      - SECRET_KEY=${SECRET_KEY:?Set SECRET_KEY in your shell or a .env file}
     restart: unless-stopped
